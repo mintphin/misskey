@@ -2,10 +2,10 @@
 <div class="qvzfzxam _narrow_" v-if="component">
 	<div class="container">
 		<header class="header" @contextmenu.prevent.stop="onContextmenu">
-			<button class="_button" @click="back()" v-if="history.length > 0"><Fa :icon="faChevronLeft"/></button>
+			<button class="_button" @click="back()" v-if="history.length > 0"><i class="fas fa-chevron-left"></i></button>
 			<button class="_button" style="pointer-events: none;" v-else><!-- マージンのバランスを取るためのダミー --></button>
 			<XHeader class="title" :info="pageInfo" :with-back="false"/>
-			<button class="_button" @click="close()"><Fa :icon="faTimes"/></button>
+			<button class="_button" @click="close()"><i class="fas fa-times"></i></button>
 		</header>
 		<component :is="component" v-bind="props" :ref="changePage"/>
 	</div>
@@ -14,11 +14,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faTimes, faChevronLeft, faExpandAlt, faWindowMaximize, faExternalLinkAlt, faLink } from '@fortawesome/free-solid-svg-icons';
 import XHeader from './_common_/header.vue';
-import * as os from '@/os';
-import copyToClipboard from '@/scripts/copy-to-clipboard';
-import { resolve } from '@/router';
+import * as os from '@client/os';
+import copyToClipboard from '@client/scripts/copy-to-clipboard';
+import { resolve } from '@client/router';
+import { url } from '@client/config';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -27,35 +28,40 @@ export default defineComponent({
 
 	provide() {
 		return {
-			navHook: (url) => {
-				this.navigate(url);
+			navHook: (path) => {
+				this.navigate(path);
 			}
 		};
 	},
 
 	data() {
 		return {
-			url: null,
+			path: null,
 			component: null,
 			props: {},
 			pageInfo: null,
 			history: [],
-			faTimes, faChevronLeft,
 		};
+	},
+
+	computed: {
+		url(): string {
+			return url + this.path;
+		}
 	},
 
 	methods: {
 		changePage(page) {
 			if (page == null) return;
-			if (page.INFO) {
-				this.pageInfo = page.INFO;
+			if (page[symbols.PAGE_INFO]) {
+				this.pageInfo = page[symbols.PAGE_INFO];
 			}
 		},
 
-		navigate(url, record = true) {
-			if (record && this.url) this.history.push(this.url);
-			this.url = url;
-			const { component, props } = resolve(url);
+		navigate(path, record = true) {
+			if (record && this.path) this.history.push(this.path);
+			this.path = path;
+			const { component, props } = resolve(path);
 			this.component = component;
 			this.props = props;
 		},
@@ -65,7 +71,7 @@ export default defineComponent({
 		},
 
 		close() {
-			this.url = null;
+			this.path = null;
 			this.component = null;
 			this.props = {};
 		},
@@ -73,31 +79,31 @@ export default defineComponent({
 		onContextmenu(e) {
 			os.contextMenu([{
 				type: 'label',
-				text: this.url,
+				text: this.path,
 			}, {
-				icon: faExpandAlt,
-				text: this.$t('showInPage'),
+				icon: 'fas fa-expand-alt',
+				text: this.$ts.showInPage,
 				action: () => {
-					this.$router.push(this.url);
+					this.$router.push(this.path);
 					this.close();
 				}
 			}, {
-				icon: faWindowMaximize,
-				text: this.$t('openInWindow'),
+				icon: 'fas fa-window-maximize',
+				text: this.$ts.openInWindow,
 				action: () => {
-					os.pageWindow(this.url);
+					os.pageWindow(this.path);
 					this.close();
 				}
 			}, null, {
-				icon: faExternalLinkAlt,
-				text: this.$t('openInNewTab'),
+				icon: 'fas fa-external-link-alt',
+				text: this.$ts.openInNewTab,
 				action: () => {
 					window.open(this.url, '_blank');
 					this.close();
 				}
 			}, {
-				icon: faLink,
-				text: this.$t('copyLink'),
+				icon: 'fas fa-link',
+				text: this.$ts.copyLink,
 				action: () => {
 					copyToClipboard(this.url);
 				}
@@ -111,7 +117,7 @@ export default defineComponent({
 .qvzfzxam {
 	$header-height: 58px; // TODO: どこかに集約したい
 
-	--section-padding: 16px;
+	--root-margin: 16px;
 	--margin: var(--marginHalf);
 
 	> .container {
@@ -135,7 +141,6 @@ export default defineComponent({
 			-webkit-backdrop-filter: blur(32px);
 			backdrop-filter: blur(32px);
 			background-color: var(--header);
-			border-bottom: solid 1px var(--divider);
 
 			> ._button {
 				height: $header-height;

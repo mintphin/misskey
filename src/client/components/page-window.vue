@@ -1,6 +1,6 @@
 <template>
 <XWindow ref="window"
-	:initial-width="400"
+	:initial-width="500"
 	:initial-height="500"
 	:can-resize="true"
 	:close-right="true"
@@ -11,10 +11,10 @@
 		<XHeader :info="pageInfo" :with-back="false"/>
 	</template>
 	<template #buttons>
-		<button class="_button" @click="back()" v-if="history.length > 0"><Fa :icon="faChevronLeft"/></button>
+		<button class="_button" @click="back()" v-if="history.length > 0"><i class="fas fa-chevron-left"></i></button>
 		<button class="_button" style="pointer-events: none;" v-else><!-- マージンのバランスを取るためのダミー --></button>
 	</template>
-	<div class="yrolvcoq" style="min-height: 100%; background: var(--bg);">
+	<div class="yrolvcoq _flat_">
 		<component :is="component" v-bind="props" :ref="changePage"/>
 	</div>
 </XWindow>
@@ -22,12 +22,13 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faExternalLinkAlt, faExpandAlt, faLink, faChevronLeft, faColumns } from '@fortawesome/free-solid-svg-icons';
-import XWindow from '@/components/ui/window.vue';
-import XHeader from '@/ui/_common_/header.vue';
-import { popout } from '@/scripts/popout';
-import copyToClipboard from '@/scripts/copy-to-clipboard';
-import { resolve } from '@/router';
+import XWindow from '@client/components/ui/window.vue';
+import XHeader from '@client/ui/_common_/header.vue';
+import { popout } from '@client/scripts/popout';
+import copyToClipboard from '@client/scripts/copy-to-clipboard';
+import { resolve } from '@client/router';
+import { url } from '@client/config';
+import * as symbols from '@client/symbols';
 
 export default defineComponent({
 	components: {
@@ -43,14 +44,14 @@ export default defineComponent({
 
 	provide() {
 		return {
-			navHook: (url) => {
-				this.navigate(url);
+			navHook: (path) => {
+				this.navigate(path);
 			}
 		};
 	},
 
 	props: {
-		initialUrl: {
+		initialPath: {
 			type: String,
 			required: true,
 		},
@@ -70,44 +71,47 @@ export default defineComponent({
 	data() {
 		return {
 			pageInfo: null,
-			url: this.initialUrl,
+			path: this.initialPath,
 			component: this.initialComponent,
 			props: this.initialProps,
 			history: [],
-			faChevronLeft,
 		};
 	},
 
 	computed: {
+		url(): string {
+			return url + this.path;
+		},
+
 		contextmenu() {
 			return [{
 				type: 'label',
-				text: this.url,
+				text: this.path,
 			}, {
-				icon: faExpandAlt,
-				text: this.$t('showInPage'),
+				icon: 'fas fa-expand-alt',
+				text: this.$ts.showInPage,
 				action: this.expand
 			}, this.sideViewHook ? {
-				icon: faColumns,
-				text: this.$t('openInSideView'),
+				icon: 'fas fa-columns',
+				text: this.$ts.openInSideView,
 				action: () => {
-					this.sideViewHook(this.url);
+					this.sideViewHook(this.path);
 					this.$refs.window.close();
 				}
 			} : undefined, {
-				icon: faExternalLinkAlt,
-				text: this.$t('popout'),
+				icon: 'fas fa-external-link-alt',
+				text: this.$ts.popout,
 				action: this.popout
 			}, null, {
-				icon: faExternalLinkAlt,
-				text: this.$t('openInNewTab'),
+				icon: 'fas fa-external-link-alt',
+				text: this.$ts.openInNewTab,
 				action: () => {
 					window.open(this.url, '_blank');
 					this.$refs.window.close();
 				}
 			}, {
-				icon: faLink,
-				text: this.$t('copyLink'),
+				icon: 'fas fa-link',
+				text: this.$ts.copyLink,
 				action: () => {
 					copyToClipboard(this.url);
 				}
@@ -118,15 +122,15 @@ export default defineComponent({
 	methods: {
 		changePage(page) {
 			if (page == null) return;
-			if (page.INFO) {
-				this.pageInfo = page.INFO;
+			if (page[symbols.PAGE_INFO]) {
+				this.pageInfo = page[symbols.PAGE_INFO];
 			}
 		},
 
-		navigate(url, record = true) {
-			if (record) this.history.push(this.url);
-			this.url = url;
-			const { component, props } = resolve(url);
+		navigate(path, record = true) {
+			if (record) this.history.push(this.path);
+			this.path = path;
+			const { component, props } = resolve(path);
 			this.component = component;
 			this.props = props;
 		},
@@ -136,12 +140,12 @@ export default defineComponent({
 		},
 
 		expand() {
-			this.$router.push(this.url);
+			this.$router.push(this.path);
 			this.$refs.window.close();
 		},
 
 		popout() {
-			popout(this.url, this.$el);
+			popout(this.path, this.$el);
 			this.$refs.window.close();
 		},
 	},
@@ -150,6 +154,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .yrolvcoq {
-	--section-padding: 16px;
+	min-height: 100%;
+	background: var(--bg);
 }
 </style>

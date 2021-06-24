@@ -1,5 +1,5 @@
 import $ from 'cafy';
-import { ID } from '../../../../misc/cafy-id';
+import { ID } from '@/misc/cafy-id';
 import define from '../../define';
 import deleteFollowing from '../../../../services/following/delete';
 import { Users, Followings, Notifications } from '../../../../models';
@@ -8,11 +8,6 @@ import { insertModerationLog } from '../../../../services/insert-moderation-log'
 import { doPostSuspend } from '../../../../services/suspend-user';
 
 export const meta = {
-	desc: {
-		'ja-JP': '指定したユーザーを凍結します。',
-		'en-US': 'Suspend a user.'
-	},
-
 	tags: ['admin'],
 
 	requireCredential: true as const,
@@ -21,10 +16,6 @@ export const meta = {
 	params: {
 		userId: {
 			validator: $.type(ID),
-			desc: {
-				'ja-JP': '対象のユーザーID',
-				'en-US': 'The user ID which you want to suspend'
-			}
 		},
 	}
 };

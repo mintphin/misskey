@@ -1,5 +1,5 @@
 <template>
-<transition :name="$store.state.device.animation ? 'fade' : ''" appear>
+<transition :name="$store.state.animation ? 'fade' : ''" appear>
 	<div class="nvlagfpb" @contextmenu.prevent.stop="() => {}">
 		<MkMenu :items="items" @close="$emit('closed')" class="_popup _shadow" :align="'left'"/>
 	</div>
@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import contains from '@/scripts/contains';
+import contains from '@client/scripts/contains';
 import MkMenu from './menu.vue';
 
 export default defineComponent({

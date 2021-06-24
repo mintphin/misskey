@@ -1,7 +1,7 @@
 <template>
-<XColumn :menu="menu" :column="column" :is-stacked="isStacked">
+<XColumn :func="{ handler: setAntenna, title: $ts.selectAntenna }" :column="column" :is-stacked="isStacked">
 	<template #header>
-		<Fa :icon="faSatellite"/><span style="margin-left: 8px;">{{ column.name }}</span>
+		<i class="fas fa-satellite"></i><span style="margin-left: 8px;">{{ column.name }}</span>
 	</template>
 
 	<XTimeline v-if="column.antennaId" ref="timeline" src="antenna" :antenna="column.antennaId" @after="() => $emit('loaded')"/>
@@ -10,10 +10,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faSatellite, faCog } from '@fortawesome/free-solid-svg-icons';
 import XColumn from './column.vue';
-import XTimeline from '@/components/timeline.vue';
-import * as os from '@/os';
+import XTimeline from '@client/components/timeline.vue';
+import * as os from '@client/os';
+import { updateColumn } from './deck-store';
 
 export default defineComponent({
 	components: {
@@ -34,7 +34,6 @@ export default defineComponent({
 
 	data() {
 		return {
-			faSatellite
 		};
 	},
 
@@ -42,14 +41,6 @@ export default defineComponent({
 		mediaOnly() {
 			(this.$refs.timeline as any).reload();
 		}
-	},
-
-	created() {
-		this.menu = [{
-			icon: faCog,
-			text: this.$t('selectAntenna'),
-			action: this.setAntenna
-		}];
 	},
 
 	mounted() {
@@ -62,7 +53,7 @@ export default defineComponent({
 		async setAntenna() {
 			const antennas = await os.api('antennas/list');
 			const { canceled, result: antenna } = await os.dialog({
-				title: this.$t('selectAntenna'),
+				title: this.$ts.selectAntenna,
 				type: null,
 				select: {
 					items: antennas.map(x => ({
@@ -73,8 +64,9 @@ export default defineComponent({
 				showCancelButton: true
 			});
 			if (canceled) return;
-			this.column.antennaId = antenna.id;
-			this.$store.commit('deviceUser/updateDeckColumn', this.column);
+			updateColumn(this.column.id, {
+				antennaId: antenna.id
+			});
 		},
 
 		focus() {

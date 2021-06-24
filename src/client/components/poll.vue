@@ -4,7 +4,7 @@
 		<li v-for="(choice, i) in poll.choices" :key="i" @click="vote(i)" :class="{ voted: choice.voted }">
 			<div class="backdrop" :style="{ 'width': `${showResult ? (choice.votes / total * 100) : 0}%` }"></div>
 			<span>
-				<template v-if="choice.isVoted"><Fa :icon="faCheck"/></template>
+				<template v-if="choice.isVoted"><i class="fas fa-check"></i></template>
 				<Mfm :text="choice.text" :plain="true" :custom-emojis="note.emojis"/>
 				<span class="votes" v-if="showResult">({{ $t('_poll.votesCount', { n: choice.votes }) }})</span>
 			</span>
@@ -13,9 +13,9 @@
 	<p>
 		<span>{{ $t('_poll.totalVotes', { n: total }) }}</span>
 		<span> · </span>
-		<a v-if="!closed && !isVoted" @click="toggleShowResult">{{ showResult ? $t('_poll.vote') : $t('_poll.showResult') }}</a>
-		<span v-if="isVoted">{{ $t('_poll.voted') }}</span>
-		<span v-else-if="closed">{{ $t('_poll.closed') }}</span>
+		<a v-if="!closed && !isVoted" @click="toggleShowResult">{{ showResult ? $ts._poll.vote : $ts._poll.showResult }}</a>
+		<span v-if="isVoted">{{ $ts._poll.voted }}</span>
+		<span v-else-if="closed">{{ $ts._poll.closed }}</span>
 		<span v-if="remaining > 0"> · {{ timer }}</span>
 	</p>
 </div>
@@ -23,9 +23,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { sum } from '../../prelude/array';
-import * as os from '@/os';
+import * as os from '@client/os';
 
 export default defineComponent({
 	props: {
@@ -38,7 +37,6 @@ export default defineComponent({
 		return {
 			remaining: -1,
 			showResult: false,
-			faCheck
 		};
 	},
 	computed: {
@@ -110,7 +108,7 @@ export default defineComponent({
 			position: relative;
 			margin: 4px 0;
 			padding: 4px 8px;
-			border: solid 1px var(--divider);
+			border: solid 0.5px var(--divider);
 			border-radius: 4px;
 			overflow: hidden;
 			cursor: pointer;
@@ -135,7 +133,7 @@ export default defineComponent({
 			> span {
 				position: relative;
 
-				> [data-icon] {
+				> i {
 					margin-right: 4px;
 				}
 

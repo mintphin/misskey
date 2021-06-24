@@ -36,7 +36,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import * as tinycolor from 'tinycolor2';
-import * as os from '@/os';
+import * as os from '@client/os';
 
 export default defineComponent({
 	data() {
@@ -116,16 +116,6 @@ export default defineComponent({
 			}
 		};
 		update();
-
-		this.$store.subscribe((mutation, state) => {
-			if (mutation.type !== 'device/set') return;
-
-			if (mutation?.payload?.key !== 'theme') return;
-
-			setTimeout(() => {
-				this.computedStyle = getComputedStyle(document.documentElement);
-			}, 250);
-		});
 	},
 
 	beforeUnmount() {
